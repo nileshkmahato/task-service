@@ -17,10 +17,10 @@ spec:
         image: task-service:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 5000
+        - containerPort: 5000  # Flask app runs on port 5000
         env:
         - name: MONGO_URI
-          value: "mongodb://mongo:27017/todo"  # This should match the service name of your MongoDB instance
+          value: "mongodb://mongo:27017/todo"
 ---
 apiVersion: v1
 kind: Service
@@ -32,6 +32,6 @@ spec:
     app: task-service
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 5000
-      nodePort: 30007
+      port: 80  # External port (NodePort)
+      targetPort: 5000  # Map to container port 5000 where Flask runs
+      nodePort: 30007  # External access
