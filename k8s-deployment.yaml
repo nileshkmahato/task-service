@@ -17,21 +17,25 @@ spec:
         image: task-service:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 5000  # Flask app runs on port 5000
+        - containerPort: 5000
         env:
         - name: MONGO_URI
           value: "mongodb://mongo:27017/todo"
+        - name: NOTIFICATION_SERVICE_URL
+          value: "http://notification-service/notify"
+        - name: KUBERNETES_SERVICE_HOST
+          value: "true"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: task-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: task-service
   ports:
     - protocol: TCP
-      port: 80  # External port (NodePort)
-      targetPort: 5000  # Map to container port 5000 where Flask runs
-      nodePort: 30007  # External access
+      port: 80
+      targetPort: 5000
+      nodePort: 30007

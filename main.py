@@ -13,13 +13,15 @@ client = MongoClient(mongo_uri)
 db = client.todo
 tasks_collection = db.tasks
 
-# Notification service URL (dynamically adjust based on environment)
-if os.environ.get('KUBERNETES_SERVICE_HOST'):
-    # We're in Kubernetes, use the service name in the cluster
-    notification_service_url = 'http://notification-service:5001/notify'
-else:
-    # We're running locally, use localhost
-    notification_service_url = 'http://localhost:5001/notify'
+# Dynamically set notification service URL
+notification_service_url = os.environ.get('NOTIFICATION_SERVICE_URL')  # First, try to fetch it from an environment variable
+
+# If NOTIFICATION_SERVICE_URL is not set, fall back to default based on the environment
+if not notification_service_url:
+    if os.environ.get('KUBERNETES_SERVICE_HOST'):  # Check if running in Kubernetes
+        notification_service_url = 'http://notification-service/notify'
+    else:
+        notification_service_url = 'http://localhost:5001/notify'
 
 def send_notification(action, task_title, email):
     notification_payload = {
@@ -27,8 +29,10 @@ def send_notification(action, task_title, email):
         'task': task_title,
         'email': sender_mail 
     }
+    print(f"Attempting to send notification: {notification_payload}")
     try:
         response = requests.post(notification_service_url, json=notification_payload)
+        print(f"Notification response: {response.Status_code}, Content: {response.text}")
         if response.status_code == 200:
             print(f"Notification sent for {action} task: {task_title}")
         else:
